@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Calendar</title>
+    <link rel="stylesheet" type="text/css" href="calendar.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js" type="text/javascript"></script>
+    <script src="helperFunctions.js" type="text/javascript"></script>
+</head>
+
+<body>
+<!-- calendar header -->
+<div id="banner"></div>
+<h1>Calendar</h1>
+
+<!-- display for unlogged in user  -->
+<div id="attemptlogin" class="notLoggedIn">
+	<p>Login:</p>
+	<label>Username: </label><input type="text" name="username" id="user"><br>
+	<label>Password: </label><input type="password" name="pswd" id="pswd"><br>
+	<button id="submit">Log In</button>
+</div>
+
+<div id="newuser" class="notLoggedIn">
+<p>Register:</p>
+        <label>Username: </label><input type="text" name="new_user" id="new_user"><br>
+        <label>Password: </label><input type="password" name="password" id="password"><br>
+        <button id="register">Register</button>
+</div>
+
+<div id="month"></div>
+
+<div id="change_month">
+	<button id="next_month_btn">Next</button>
+	<button id="prev_month_btn">Previous</button>
+</div>
+
+<div class="weekdays">
+<table id="calendarFrame">
+        <tr>
+                <th>Sunday</th>
+                <th>Monday</th>
+                <th>Tuesday</th>
+                <th>Wednesday</th>
+                <th>Thursday</th>
+                <th>Friday</th>
+                <th>Saturday</th>
+        </tr>
+</table>
+</div>
+
+<!--Events-->
+<div id="events" class="loggedIn">
+<p>Add an Event:</p>
+	<label>Title: </label><input type="text" name="title" id="title"><br>
+	<label>Date: (yyyy-mm-dd) </label><input type="text" name="date" id="date"><br>
+	<label>Time: (hh:mm:ss) </label><input type="text" name="time" id="time"><br>
+	<label id="work"><input type="radio" name="type" value="Work" class="btns">Work</label>
+	<label id="home"><input type="radio" name="type" value="Home" class="btns">Home</label>
+	<label id="travel"><input type="radio" name="type" value="Travel" class="btns">Travel</label>
+	<label id="other"><input type="radio" name="type" value="Other" class="btns" checked>Other</label><br>
+	<label id="recurringEvent">Recurring: </label>
+	<label class="recurring"><input type="radio" name="recurring" class="btns" data-recurring="yes" checked>Yes</label>
+	<label class="recurring"><input type="radio" name="recurring" class="btns" data-recurring="no">No</label><br>
+	<button id="submit_event">Add</button>
+</div>
+
+<div id="buttonSettings" class="loggedIn">
+	<button id="enable">Enable Tags</button>
+	<button id="disable">Disable Tags</button>
+</div>
+
+<!--View Event-->
+<div id="view_event">
+	<p>Your Event:</p>
+  	<label id="event_display"></label>
+  	<input type="hidden" id="title_info" value="">
+ 	<input type="hidden" id="date_info" value="">
+  	<input type="hidden" id="time_info" value="">
+    	<input type="hidden" id="type_info" value="">
+    	<input type="hidden" id="recurring_info" value=""><br>
+  	<br>
+  	<button id="edit_event">Edit</button>
+  	<button id="delete_event">Delete</button>
+  	<button id="share_event">Share</button>
+</div>
+
+<div id="edit_form">
+	<p>Edit Event:</p>
+	<label>Title: </label><br><input type="text" name="edit_title" id="edit_title"><br>
+	<label>Date: (yyyy-mm-dd) </label><br><input type="text" name="edit_date" id="edit_date"><br>
+	<label>Time: (hh:mm:ss) </label><br><input type="text" name="edit_time" id="edit_time"><br>
+	<label id="editWork"><input type="radio" name="edit_type" value="Work" class="btns">Work</label>
+	<label id="editHome"><input type="radio" name="edit_type" value="Home" class="btns">Home</label> <br>
+	<label id="editTravel"><input type="radio" name="edit_type" value="Travel" class="btns">Travel</label>
+	<label id="editOther"><input type="radio" name="edit_type" value="Other" class="btns" checked>Other</label><br>
+	<label id="recurring_Event">Recurring: </label>
+	<label class="recurring"><input type="radio" name="edit_recurring" class="btns" data-recurring="yes" checked>Yes</label>
+	<label class="recurring"><input type="radio" name="edit_recurring" class="btns" data-recurring="no">No</label><br>
+	<button id="submit_edit_event">Submit</button>
+</div>
+
+<div id="share_form">
+	<p>Share With:</p>
+	<label>Username: </label><input type="text" name="share_user" id="share_user"><br>
+	<button id="submit_share_event">Submit</button>
+	<p>Existing Users:</p>
+	<span id="existing_users"></span>
+</div>
+
+<!-- token goes here when a user logs in -->
+<input id="user_token" type="hidden" value="">
+
+<button id="log_out" class="loggedIn">Log Out</button>
+
+<div id="creativePortion" class="loggedIn"></div>
+
+<script type="text/javascript">
+/* globals $, Month */
+
+//login
+function loginAjax(event) {
+        var username = document.getElementById("user").value;
+        var pswd = document.getElementById("pswd").value;
+        var dataString = "username=" + encodeURIComponent(username) + "&pswd=" + encodeURIComponent(pswd);
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.open("POST", "checkuser.php", true);
+        xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        xmlHttp.addEventListener("load", function(event){
+        	var jsonData = JSON.parse(event.target.responseText);
+                if(jsonData.success){
+                	alert("You've been logged in!");
+                	document.getElementById('user_token').value = jsonData.token;
+                	updateCalendar();
+
+                }else{
+                        alert("You were not logged in. " + jsonData.message);
+                }
+        }, false);
+        xmlHttp.send(dataString);
+}
+document.getElementById("submit").addEventListener("click", loginAjax, false);
+
+//register
+function newLoginAjax(event){
+        var new_user = document.getElementById("new_user").value;
+        var password = document.getElementById("password").value;
+        var dataString = "new_user=" + encodeURIComponent(new_user) + "&password=" + encodeURIComponent(password);
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.open("POST", "createuser.php", true);
+        xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        xmlHttp.addEventListener("load", function(event){
+                var jsonData = JSON.parse(event.target.responseText);
+                if(jsonData.success)
+                {
+                	alert("Your account has been created!");
+                	document.getElementById('user_token').value = jsonData.token;
+                  	addUniversalEvents();
+                }
+                else
+                {
+                	alert("Your account was not created. " + jsonData.message);
+                }
+        }, false);
+        xmlHttp.send(dataString);
+}
+document.getElementById("register").addEventListener("click", newLoginAjax, false);
+
+//add universal events
+function addUniversalEvents() {
+	var dataString = "token=" + encodeURIComponent(document.getElementById('user_token').value);
+	var xmlHttp = new XMLHttpRequest();
+	xmlHttp.open("POST", "universalEvents.php", true);
+	xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+	xmlHttp.addEventListener("load", function(event){ 
+		updateCalendar();
+  	}, false);
+  	xmlHttp.send(dataString);
+}
+
+//check user input format
+function test_format(event) {
+	var date_string = String(document.getElementById("date").value);
+  	var regex = /(\d{4})-([0][1-9]|[1][0-2])-([0][1-9]|[1-2][0-9]|[3][0-1])/;
+  	if(!regex.exec(date_string)) {
+    		alert("Improperly formatted or non-existant date: " + date_string);
+    		return;
+	}
+	var year = parseInt(date_string.slice(0, 4));
+  	var month = parseInt(date_string.slice(5, 7));
+  	var day = parseInt(date_string.slice(8));
+
+	if((month==4 || month==6 || month==9 || month==11) && day>30) { //30 day month
+		alert("improperly formatted or non-existant date: " + date_string);
+		return;
+	}
+  	else if (month==2) {
+    		if(year%4===0 && day>29) { //february leap year
+     		alert("improperly formatted or non-existant date: " + date_string);
+      		return;
+	}
+    	else if(year%4!==0 && day>28) { //february normal year
+      		alert("improperly formatted or non-existant date: " + date_string);
+      		return;
+		}
+	}
+	return true;
+}
+
+//add event
+function addEvent(event){
+	var date_string = String(document.getElementById("date").value);
+	if(!test_format(date_string)) {
+		return;
+      	}
+	// get selected radio button
+	var type;
+  	var type_radios = document.getElementsByName("type");
+  	for(var i=0; i<type_radios.length; i++) {
+    	if(type_radios[i].checked){
+      		type = type_radios[i].value;
+    		}
+	}
+  	var recurring;
+  	var recurring_radios = document.getElementsByName("recurring");
+  	for(var j=0; j<recurring_radios.length; j++) {
+    		if(recurring_radios[j].checked) {
+      			recurring = String(recurring_radios[j].dataset.recurring);
+    		}
+  	}
+  	console.log(type);
+  	console.log(recurring);
+	var title = document.getElementById("title").value;
+	var time = document.getElementById("time").value;
+	var new_date = (new Date(date_string)).deltaDays(1);
+
+	var dataString = "token=" + encodeURIComponent(document.getElementById('user_token').value) + "&title=" + encodeURIComponent(title) + "&year=" + encodeURIComponent(new_date.getFullYear()) + "&month=" + encodeURIComponent(new_date.getMonth()) + "&day=" + encodeURIComponent(new_date.getDate()) + "&time=" + encodeURIComponent(time) + "&type=" + encodeURIComponent(type) + "&recurring=" + encodeURIComponent(recurring);
+
+	var xmlHttp = new XMLHttpRequest();
+	xmlHttp.open("POST", "addevent.php", true);
+	xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+	xmlHttp.addEventListener("load", function(event){
+		var jsonData = JSON.parse(event.target.responseText);
+		console.log(jsonData);
+		if(jsonData.success){
+                	alert("Event added");
+                	updateCalendar();
+            	}else{
+                	alert("Event was not added.  "+jsonData.message);
+            	}
+	}, false);
+	xmlHttp.send(dataString);
+}
+document.getElementById("submit_event").addEventListener("click", addEvent, false);
+
+//delete event
+function deleteEvent(event){
+	var delete_date_string = String(document.getElementById("date_info").value);
+	var delete_date = (new Date(delete_date_string)).deltaDays(1);
+	var title = document.getElementById("title_info").value;
+	var time = document.getElementById("time_info").value;
+	var type = document.getElementById("type_info").value;
+	var recurring = document.getElementById("recurring_info").dataset.recurring;
+
+	var dataString = "token=" + encodeURIComponent(document.getElementById('user_token').value) + "&title=" + encodeURIComponent(title) + "&year=" + encodeURIComponent(delete_date.getFullYear()) + "&month=" + encodeURIComponent(delete_date.getMonth()) + "&day=" + encodeURIComponent(delete_date.getDate()) + "&time=" + encodeURIComponent(time) + "&type=" + encodeURIComponent(type) + "&recurring=" + encodeURIComponent(recurring);
+
+	var xmlHttp = new XMLHttpRequest();
+	xmlHttp.open("POST", "deleteEvent.php", true);
+        xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+	xmlHttp.addEventListener("load", function(event) {
+		var jsonData = JSON.parse(event.target.responseText);
+		if(jsonData.success) {
+			alert("Event Deleted");
+			updateCalendar();
+		}else{
+			alert("Event not deleted");
+		}
+	}, false);
+	xmlHttp.send(dataString);
+}
+document.getElementById("delete_event").addEventListener("click", deleteEvent, false);
+
+
+//edit event
+function view_event(event)
+{
+	$("#view_event").show();
+
+    	//update form fields;
+	var title = event.target.dataset.title;
+      	var date = new Date(event.target.dataset.date);
+      	var time = event.target.dataset.time;
+        var type = event.target.dataset.type;
+        var recurring = event.target.dataset.recurring;
+
+      	var btn_day = date.getDate();
+      	var btn_month = date.getMonth()+1;
+      	var btn_year = date.getFullYear();
+      	if(btn_day<10) {
+        	btn_day = '0' + btn_day;
+      	}
+      	if(btn_month<10){
+        	btn_month = '0' + btn_month;
+      	}
+      	var date_string = btn_year + '-' + btn_month + '-' + btn_day;
+
+      	var edit_radios = document.getElementsByName("edit_type");
+      	for(var m=0; m<edit_radios.length; m++){
+        	if(edit_radios[m].value == type) {
+          		edit_radios[m].checked = true;
+        	}
+      	}
+
+      	var edit_recurring = document.getElementsByName("edit_recurring");
+      	for(var i=0; i<edit_recurring.length; i++){
+        	if(edit_recurring[i].dataset.recurring == recurring) {
+        		edit_recurring[i].checked = true;
+        	}
+      	}
+
+    	document.getElementById("edit_title").value = title;
+    	document.getElementById("edit_date").value = date_string;
+    	document.getElementById("edit_time").value = time;
+
+    	document.getElementById("title_info").value = title;
+    	document.getElementById("date_info").value = date_string;
+    	document.getElementById("time_info").value = time;
+      	document.getElementById("type_info").value = type;
+      	document.getElementById("recurring_info").dataset.recurring = recurring;
+
+      	document.getElementById("event_display").innerHTML = "'" + title + "' at " + time + "<br>" + " on " + date_string;
+}
+
+//submit edited event
+function edit_event(event)
+{
+	//prepare variables to query the database
+	var oldTitle = document.getElementById("title_info").value;
+	var oldDateString = String(document.getElementById("date_info").value);
+	var oldDate = (new Date(oldDateString)).deltaDays(1);
+	var oldTime = document.getElementById("time_info").value;
+  	var oldType = document.getElementById("type_info").value;
+  	var oldRecurring = document.getElementById("recurring_info").dataset.recurring;
+
+	var newTitle = document.getElementById("edit_title").value;
+	var newDateString = String(document.getElementById("edit_date").value);
+	var newDate = (new Date(newDateString)).deltaDays(1);
+	var newTime = document.getElementById("edit_time").value;
+
+  	var newType;
+  	var edit_type_radios = document.getElementsByName("edit_type");
+ 	for(var r=0; r<edit_type_radios.length; r++) {
+    		if(edit_type_radios[r].checked === true) {
+      			newType = edit_type_radios[r].value;
+      		}
+	}
+  	var newRecurring;
+  	var edit_recurring_radios = document.getElementsByName("edit_recurring");
+  	for(var q=0; q<edit_recurring_radios.length; q++) {
+    		if(edit_recurring_radios[q].checked === true) {
+    			newRecurring = edit_recurring_radios[q].dataset.recurring; 
+		}
+  	}	
+
+	var dataString = "token=" + encodeURIComponent(document.getElementById("user_token").value) + "&newTitle=" + encodeURIComponent(newTitle) + "&newYear=" + encodeURIComponent(newDate.getFullYear()) + "&newMonth=" + encodeURIComponent(newDate.getMonth()) + "&newDay=" + encodeURIComponent(newDate.getDate()) + "&newTime=" + encodeURIComponent(newTime) + "&newType=" + encodeURIComponent(newType) + "&newRecurring=" + encodeURIComponent(newRecurring) + "&oldTitle=" + encodeURIComponent(oldTitle)+ "&oldYear=" + encodeURIComponent(oldDate.getFullYear()) + "&oldMonth=" + encodeURIComponent(oldDate.getMonth()) + "&oldDay=" + encodeURIComponent(oldDate.getDate()) + "&oldTime=" + encodeURIComponent(oldTime) + "&oldType=" + encodeURIComponent(oldType) + "&oldRecurring=" + encodeURIComponent(oldRecurring);	
+
+	var xmlHttp = new XMLHttpRequest();
+	xmlHttp.open("POST", "editEvent.php", true);
+	xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+	xmlHttp.addEventListener("load", function(event) {
+	console.log("PRINT:", event.target.responseText);
+	var jsonData = JSON.parse(event.target.responseText);
+	console.log(jsonData);
+    	if(jsonData.success) {
+      		alert("Event Edited!");
+      		updateCalendar();
+	}
+    	else {
+      		alert("Event not Edited"); }
+    	}, false);
+  	xmlHttp.send(dataString);
+}
+document.getElementById("submit_edit_event").addEventListener("click", edit_event, false);
+
+//share an event
+function shareEvent(event) {
+        var title = document.getElementById("title_info").value;
+        var time = document.getElementById("time_info").value;
+        var date_string = String(document.getElementById("date_info").value);
+        var date = new Date(date_string).deltaDays(1);
+        var type = document.getElementById("type_info").value;
+        var recurring = document.getElementById("recurring_info").dataset.recurring;
+
+        var share_user = document.getElementById("share_user").value;
+
+        var dataString = "token=" + encodeURIComponent(document.getElementById("user_token").value) + "&title=" + encodeURIComponent(title) + "&year=" + encodeURIComponent(date.getFullYear()) + "&month=" + encodeURIComponent(date.getMonth()) + "&day=" + encodeURIComponent(date.getDate()) + "&time=" + encodeURIComponent(time) + "&type=" + encodeURIComponent(type) + "&recurring=" + encodeURIComponent(recurring) + "&share_user=" + encodeURIComponent(share_user);
+
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.open("POST", "shareEvent.php", true);
+        xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        xmlHttp.addEventListener("load", function(event){
+                var jsonData = JSON.parse(event.target.responseText);
+                if(jsonData.success){
+                        alert("Event shared");
+                        updateCalendar();
+                }else{
+                        alert("Event was not shared " + jsonData.message);
+                }
+        }, false);
+        xmlHttp.send(dataString);
+}
+document.getElementById("submit_share_event").addEventListener("click", shareEvent, false);
+
+//logout
+function logout(event) {
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.open("POST", "logout.php", true);
+        xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        xmlHttp.send();
+
+        //clear all the inputs
+        var inputs = document.getElementsByTagName('input');
+        for(var i=0; i<inputs.length; i++) {
+        	inputs[i].value = ""; }
+
+        updateCalendar();
+}
+document.getElementById("log_out").addEventListener("click", logout, false);
+
+var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+// For our purposes, we can keep the current month in a variable in the global scope
+var currentMonth = new Month(2017, 9); // October 20
+var tags_visible = false;
+
+document.getElementById("month").innerHTML = String(months[currentMonth.month] + " " + currentMonth.year);
+
+// Change the month when the "next" button is pressed
+document.getElementById("next_month_btn").addEventListener("click", function(event){
+        currentMonth = currentMonth.nextMonth(); // Previous month would be currentMonth.prevMonth()
+        document.getElementById("month").innerHTML = String(months[currentMonth.month] + " " + currentMonth.year);
+        updateCalendar();}, false); // Whenever the month is updated, we'll need to re-render the calendar in HTML
+
+
+// Change the month when the "previous" button is pressed
+document.getElementById("prev_month_btn").addEventListener("click", function(event){
+        currentMonth = currentMonth.prevMonth(); // Previous month would be currentMonth.prevMonth()
+        document.getElementById("month").innerHTML = String(months[currentMonth.month] + " " + currentMonth.year);
+        updateCalendar();}, false); // Whenever the month is updated, we'll need to re-render the calendar in HTML
+
+document.getElementById("enable").addEventListener("click", function(event) {
+	tags_visible = true; updateCalendar();}, false);
+
+document.getElementById("disable").addEventListener("click", function(event) {
+	tags_visible = false; updateCalendar();}, false);
+
+document.getElementById("edit_event").addEventListener("click", function(event) {
+	$("#edit_form").show();
+	$("#share_form").hide();
+	}, false);
+
+document.getElementById("share_event").addEventListener("click", function(event) {
+	$("#share_form").show();
+	$("#edit_form").hide();
+
+	//get usernames
+  	document.getElementById("existing_users").innerHTML = "";
+	var usernames;
+	var xmlHttp = new XMLHttpRequest();
+        xmlHttp.open("GET", "getUsers.php", true);
+        xmlHttp.addEventListener("load", function(event){
+        	usernames = JSON.parse(event.target.responseText);
+                for(var i=0; i < usernames.length; i++) {
+                	document.getElementById("existing_users").innerHTML += usernames[i] + "<br>";
+                }
+        }, false);
+        xmlHttp.send(null);
+	}, false);
+
+updateCalendar();
+
+// ******UPDATE CALENDAR FUNCTION******
+// This updateCalendar() function only alerts the dates in the currently specified month.  You need to write
+// it to modify the DOM (optionally using jQuery) to display the days and weeks in the current month.
+function updateCalendar()
+{
+	$("#view_event").hide();
+	$("#edit_form").hide();
+	$("#share_form").hide();
+
+	//make sure that type inputs are properly filled out
+	var edit_types = document.getElementsByName("edit_type");
+  	var types = document.getElementsByName("type");
+  	for(var x = 0; x < edit_types.length; x++)
+  	{
+   		if(x===0) {
+      			edit_types[0].value = 'Work';
+      			types[0].value = 'Work';
+    		}
+    		if(x==1) {
+      			edit_types[1].value = 'Home';
+      			types[1].value = 'Home';
+    		}
+    		if(x==2) {
+      			edit_types[2].value = 'Travel';
+      			types[2].value = 'Travel';
+    		}
+    		if(x==3) {
+      			edit_types[3].value = 'Other';
+      			types[3].value = 'Other';
+    		}
+	}	
+
+	//get necessary variables
+	var table = document.getElementById("calendarFrame");
+	var weeks = currentMonth.getWeeks();
+	var curWeek;
+	var curDay;
+
+	//var days = [];
+
+	//clear table if necessary
+	while(table.rows.length>1) {
+ 	table.deleteRow(table.rows.length-1); }
+
+	//add days one row at a time
+	for(var i=0; i<weeks.length; i++)
+	{
+		var index = i+1;
+		curWeek = table.insertRow(index);
+    		for(var j=0; j<7; j++)
+    		{
+      			curDay = curWeek.insertCell(j); //insert a cell
+      			curDay.innerHTML = weeks[i].getDates()[j].getDate();//edit the display
+			curDay.className = "cell";
+      			if(weeks[i].getDates()[j].getMonth() == currentMonth.month) {
+          			curDay.id = String(weeks[i].getDates()[j].getDate());//give it a date-specific id
+        		}
+    		}
+ 	}
+
+	//check to see if a user is loggedIn
+	if(document.getElementById('user_token').value === "" )
+  	{
+  		$(".loggedIn").hide();
+  		$(".notLoggedIn").show();
+  		document.getElementById('user_token').value = "";
+  	}
+  	else
+  	{
+      		$(".loggedIn").show();
+      		$(".notLoggedIn").hide();
+    		getEvents(currentMonth);
+  	}
+}
+
+//if logged in
+function getEvents(currentMonth)
+{
+	//get events for the user
+	var events;
+	var dataString = "month=" + encodeURIComponent(currentMonth.month) + "&year=" + encodeURIComponent(currentMonth.year) + "&recurring=" + encodeURIComponent('no');
+	var xmlHttp = new XMLHttpRequest();
+	xmlHttp.open("POST", "getEvents.php", true);
+	xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+	xmlHttp.addEventListener("load", function(event){
+		console.log(event.target.responseText);
+    		events = JSON.parse(event.target.responseText);
+    		console.log(events);
+    		//add the events
+    		for(var i=0; i<events.length; i++) {
+
+            	//create button and store information about the event in hidden inputs
+            	var btn = document.createElement("BUTTON");
+            	btn.setAttribute('data-recurring', 'no');
+            	btn.setAttribute('data-date', new Date(currentMonth.year, currentMonth.month, events[i].day));
+            	btn.setAttribute('data-time', events[i].time);
+            	btn.setAttribute('data-title', events[i].title);
+            	btn.setAttribute('data-type', events[i].type);
+            	if(tags_visible===true){
+              		btn.className = events[i].type;
+            	}
+            	else {
+              		btn.className = "button";
+            	}
+            	btn.innerHTML = events[i].title;
+            	btn.addEventListener("click", view_event, false);
+      		document.getElementById(String(events[i].day)).appendChild(btn);
+        }
+        getRecurringEvents(currentMonth);
+        }, false);
+	xmlHttp.send(dataString);
+}
+
+//get recurring events
+function getRecurringEvents(currentMonth) {
+	var events;
+  	var dataString = "month=" + encodeURIComponent(currentMonth.month) + "&year=" + encodeURIComponent(currentMonth.year) + "&recurring=" + encodeURIComponent('yes');
+  	var xmlHttp = new XMLHttpRequest();
+  	xmlHttp.open("POST", "getRecurringEvents.php", true);
+  	xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+  	xmlHttp.addEventListener("load", function(event){
+    		console.log(event.target.responseText);
+        	events = JSON.parse(event.target.responseText);
+        	console.log(events);
+        	//add the events
+        	for(var i=0; i<events.length; i++) {
+            		//create button and store information about the event in hidden inputs
+            		var btn = document.createElement("BUTTON");
+           		btn.setAttribute('data-recurring', 'yes');
+            		btn.setAttribute('data-date', new Date(events[i].year, events[i].month, events[i].day));
+            		btn.setAttribute('data-time', events[i].time);
+            		btn.setAttribute('data-title', events[i].title);
+            		btn.setAttribute('data-type', events[i].type);
+            		if(tags_visible===true){
+              			btn.className = events[i].type;
+            		}
+            		else {
+              			btn.className = "button";
+            		}
+            		btn.innerHTML = events[i].title;
+            		btn.addEventListener("click", view_event, false);
+            		document.getElementById(String(events[i].day)).appendChild(btn);
+          	}
+        }, false);
+	xmlHttp.send(dataString);
+}
+
+</script>
+</body>
+</html>

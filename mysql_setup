@@ -1,0 +1,24 @@
+update events set title='event', year=2017, month=9, day=12, time='00:00:00' where title='event3' and year=2017 and month=9 and day=12 and time='00:00:00' and owner_id=1;
+
+create database calendar;
+
+create table users (
+  user_id smallint(10) unsigned not null auto_increment,
+  password_hash varchar(255) not null,
+  username varchar(150) not null,
+  primary key (user_id)
+) engine = InnoDB default character set = utf8 collate = utf8_general_ci;
+
+create table events (
+    event_id smallint(5) unsigned not null auto_increment,
+    title varchar(50) not null,
+    year int(5) not null,
+    month int(5) not null,
+    day int(5) not null,
+    time time not null,
+    type enum('Work', 'Home', 'Travel', 'Other') not null default 'Other',
+    recurring enum('yes', 'no') not null default 'no',
+    owner_id smallint(5) unsigned not null,
+    primary key (event_id),
+    foreign key (owner_id) references users (user_id)
+  ) engine = InnoDB default character set = utf8 collate = utf8_general_ci;

@@ -1,0 +1,241 @@
+h1 {
+	font-family: Helvetica;
+	font-size: 40px;
+	text-align: center;
+	position: relative;
+	bottom: 135px;
+}
+
+#banner {
+	background: rgb(95, 158, 160);
+	width: 100%;
+	height: 171px;
+}
+
+#attemptlogin p {
+	font-weight: bold;
+	text-align: center;
+}
+
+#newuser p {
+	font-weight: bold;
+	text-align: center;
+}
+
+#attemptlogin {
+	font-family: Helvetica;
+	position: absolute;
+	top: 28px;
+	left: 43px;
+}
+
+#newuser {
+	font-family: Helvetica;
+	position: absolute;
+	right: 42px;
+	top: 30px;
+}
+
+#events p {
+	font-weight: bold;
+	text-align: center;
+}
+
+#events #work {
+	color: #ffe097;
+}
+
+#events #home {
+	color: #685a76;
+}
+
+#events #travel {
+	color: #a8cca0;
+}
+
+#events #other {
+	color: #e1bbdc;
+}
+
+#edit_form #editWork {
+	color: #ffe097;
+}
+
+#edit_form #editHome {
+        color: #685a76;
+}
+
+#edit_form #editTravel {
+        color: #a8cca0;
+}
+
+#edit_form #editOther {
+        color: #e1bbdc;
+}
+
+
+#events #typeHeader {
+	position: absolute;
+	top: 1px;
+	left: 342px;
+}
+
+#radButtons{
+	position: absolute;
+	left: 342px;
+}
+
+#events {
+	font-family: Helvetica;
+	position: absolute;
+	top: 7px;
+	left: 31px;
+}
+
+#month {
+	font-family: Helvetica;
+	font-size: 30px;
+	position: absolute;
+	top: 209px;
+	text-align: center;
+	width: 100%;
+}
+
+#next_month_btn {
+	position: absolute;
+	right: 279px;
+	top: 250px;
+}
+
+#prev_month_btn {
+	position: absolute;
+	left: 277px;
+	top: 247px;
+}
+
+table {
+    border-collapse: collapse;
+    border: 1px solid black;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+th{
+        width: 100px;
+        border: 1px solid black;
+        font-family: Helvetica;
+
+}
+td{
+        border: 1px solid black;
+        height: 100px;
+        vertical-align: top;
+}
+
+.datebox{
+        font-weight: bold;
+        width: max-width;
+        background: rgb(95,158,160);
+        color:white;
+        font-family: Helvetica;
+}
+
+#log_out {
+	position: absolute;
+	top: 96px;
+	right: 79px;
+}
+
+.cell {
+	font-family: Helvetica;
+}
+
+#view_event p {
+	font-weight: bold;
+}
+
+#view_event {
+	font-family: Helvetica;
+	position: absolute;
+	top: 240px;
+	left: 27px;
+}
+
+#edit_form p {
+	font-weight: bold;
+}
+
+#edit_form {
+	font-family: Helvetica;
+	position: absolute;
+	top: 390px;
+	left: 27px;
+}
+
+#share_form p {
+	font-weight: bold;
+}
+
+#share_form {
+	font-family: Helvetica;
+	position: absolute;
+	top: 390px;
+	left: 27px;
+}
+
+.button {
+	font-family: Helvetica;
+	font-size: 12px;
+	width: 100%;
+	background-color: transparent;
+	border-radius: 5px;
+	border-style: solid;
+}
+
+#enable {
+	position: absolute;
+	top: 190px;
+	left: 32px;
+}
+
+#disable {
+	position: absolute;
+	top: 190px;
+	left: 130px;
+}
+
+.Work {
+	font-family: Helvetica;
+        font-size: 12px;
+        width: 100%;
+	background-color: #ffe097;
+        border-radius: 5px;
+        border-style: solid;
+}
+
+.Home {
+	font-family: Helvetica;
+        font-size: 12px;
+        width: 100%;
+	background-color: #685a76;
+        border-radius: 5px;
+        border-style: solid;
+}
+
+.Travel {
+	font-family: Helvetica;
+        font-size: 12px;
+        width: 100%;
+	background-color: #a8cca0;
+        border-radius: 5px;
+        border-style: solid;
+}
+
+.Other {
+	font-family: Helvetica;
+        font-size: 12px;
+        width: 100%;
+	background-color: #e1bbdc;
+        border-radius: 5px;
+        border-style: solid;
+}
